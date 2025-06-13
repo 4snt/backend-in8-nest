@@ -7,7 +7,7 @@ Este é o backend desenvolvido com **NestJS** para o desafio técnico da **Devno
 - Autenticação segura com JWT;
 - Integração com PostgreSQL (via Neon) usando Prisma ORM;
 - Organização modular e escalável para futuros recursos como checkout real com Stripe;
-- Deploy funcional via **Railway**;
+- Deploy funcional em produção via **Railway**;
 - Versionamento de releases com `standard-version`.
 
 ---
@@ -167,12 +167,12 @@ npm run release
 
 ---
 
-## ☁️ Deploy
+## ☁️ Deploy em Produção
 
-> O backend está hospedado no Railway, com CI/CD via GitHub.
+Este backend está **hospedado em produção** via [Railway](https://railway.app), com CI/CD automatizado conectado ao GitHub.
 
-🌐 **URL pública** (exemplo):  
-https://backend-in8-nest-production.up.railway.app
+🔗 **URL pública**:  
+👉 https://backend-in8-nest-production.up.railway.app
 
 ---
 
@@ -188,7 +188,7 @@ Authorization: Bearer <token>
 
 ## 🖥️ Frontend
 
-Este repositório cobre **apenas o backend**. O frontend será publicado separadamente, consumindo este backend público.
+Este repositório cobre **apenas o backend**. O frontend será publicado separadamente, consumindo este backend público em produção.
 
 ---
 
