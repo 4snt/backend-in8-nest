@@ -1,29 +1,23 @@
-// src/image/image.controller.ts
+// src/images/images.controller.ts
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import axios from 'axios';
 import { Response } from 'express';
 
-@Controller('image')
-export class ImageController {
+@Controller('images-proxy')
+export class ImagesController {
   @Get()
-  async proxyImage(@Query('url') url: string, @Res() res: Response) {
-    if (!url || !url.startsWith('http')) {
-      return res.status(400).send('Invalid URL');
+  async proxy(@Query('url') url: string, @Res() res: Response) {
+    if (!url) {
+      return res.status(400).send('Missing URL');
     }
 
-    try {
-      const response = await axios.get(url, {
-        responseType: 'arraybuffer',
-      });
+    const response = await axios.get(url, {
+      responseType: 'arraybuffer',
+    });
 
-      const contentType = response.headers['content-type'] || 'image/jpeg';
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    const contentType = response.headers['content-type'] || 'image/jpeg';
 
-      return res.send(response.data);
-    } catch (error) {
-      console.error('Error fetching image:', error);
-      return res.status(500).send('Failed to fetch image');
-    }
+    res.setHeader('Content-Type', contentType);
+    res.send(response.data);
   }
 }

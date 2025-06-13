@@ -6,10 +6,12 @@ import axios from 'axios';
 export class ProductsService {
   private brUrl: string;
   private euUrl: string;
+  private apiUrl: string;
 
   constructor(private config: ConfigService) {
     this.brUrl = this.config.get<string>('BRAZILIAN_URL')!;
     this.euUrl = this.config.get<string>('EUROPEAN_URL')!;
+    this.apiUrl = this.config.get<string>('API_URL')!; // URL do próprio backend
   }
 
   private normalize(product: any, provider: 'br' | 'eu') {
@@ -23,7 +25,7 @@ export class ProductsService {
         : product.imagem || product.image || '';
 
     const image = rawImage
-      ? `${this.config.get('API_URL')}/images-proxy?url=${encodeURIComponent(rawImage)}`
+      ? `${this.apiUrl}/images-proxy?url=${encodeURIComponent(rawImage)}`
       : '';
 
     return {
