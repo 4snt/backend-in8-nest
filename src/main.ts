@@ -7,8 +7,13 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors();
 
-  const port = process.env.PORT ? Number(process.env.PORT) : 3000;
-  await app.listen(port);
-}
+  const portEnv = process.env.PORT;
+  if (!portEnv) throw new Error('PORT is not defined in environment variables');
 
+  const PORT = Number(portEnv);
+  if (isNaN(PORT)) throw new Error('PORT is not a valid number');
+
+  await app.listen(PORT);
+  console.log(`🚀 Server running on port ${PORT}`);
+}
 bootstrap();
