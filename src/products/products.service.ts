@@ -16,10 +16,15 @@ export class ProductsService {
 
   private fixImage(url: string) {
     if (!url) return '';
-    return url.replace(
-      'http://placeimg.com/640/480/',
-      'https://loremflickr.com/640/480/',
-    );
+    return url
+      .replace(
+        'http://placeimg.com/640/480/',
+        'https://loremflickr.com/640/480/',
+      )
+      .replace(
+        'https://placeimg.com/640/480/',
+        'https://loremflickr.com/640/480/',
+      );
   }
 
   private normalize(product: any, provider: 'br' | 'eu') {
@@ -34,8 +39,12 @@ export class ProductsService {
 
     const fixedImage = this.fixImage(rawImage);
 
+    const randomParam = `?random=${Math.floor(Math.random() * 100000)}`; // 🔥 Para variar imagens
+
     const image = fixedImage
-      ? `${this.apiUrl}/api/images/proxy?url=${encodeURIComponent(fixedImage)}`
+      ? `${this.apiUrl}/api/images/proxy?url=${encodeURIComponent(
+          fixedImage + randomParam,
+        )}`
       : `${this.apiUrl}/api/images/proxy?url=${encodeURIComponent(
           'https://via.placeholder.com/640x480?text=No+Image',
         )}`;
