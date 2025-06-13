@@ -5,7 +5,7 @@ import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
 
 @Module({
-  imports: [ConfigModule], // pra ler as URLs do .env
+  imports: [ConfigModule],
   controllers: [ProductsController],
   providers: [ProductsService],
 })
