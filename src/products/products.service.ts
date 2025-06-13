@@ -11,7 +11,7 @@ export class ProductsService {
   constructor(private config: ConfigService) {
     this.brUrl = this.config.get<string>('BRAZILIAN_URL')!;
     this.euUrl = this.config.get<string>('EUROPEAN_URL')!;
-    this.apiUrl = this.config.get<string>('API_URL')!; // URL do backend
+    this.apiUrl = this.config.get<string>('API_URL')!;
   }
 
   private fixImage(url: string) {
@@ -38,8 +38,7 @@ export class ProductsService {
         : product.imagem || product.image || '';
 
     const fixedImage = this.fixImage(rawImage);
-
-    const randomParam = `?random=${Math.floor(Math.random() * 100000)}`; // 🔥 Para variar imagens
+    const randomParam = `?random=${Math.floor(Math.random() * 100000)}`;
 
     const image = fixedImage
       ? `${this.apiUrl}/api/images/proxy?url=${encodeURIComponent(
@@ -75,17 +74,23 @@ export class ProductsService {
 
   async findOne(id: string) {
     const [provider, rawId] = id.split('-');
+
     let url: string;
 
-    if (provider === 'br') url = `${this.brUrl}/${rawId}`;
-    else if (provider === 'eu') url = `${this.euUrl}/${rawId}`;
-    else throw new Error('Invalid provider');
+    if (provider === 'br') {
+      url = `${this.brUrl}/${rawId}`;
+    } else if (provider === 'eu') {
+      url = `${this.euUrl}/${rawId}`;
+    } else {
+      throw new Error('Invalid provider');
+    }
 
     try {
       const res = await axios.get(url);
       if (!res.data?.id) return null;
       return this.normalize(res.data, provider);
-    } catch {
+    } catch (error) {
+      console.error('Erro ao buscar produto:', error);
       return null;
     }
   }
