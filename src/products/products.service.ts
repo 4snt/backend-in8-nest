@@ -35,8 +35,8 @@ export class ProductsService {
     const fixedImage = this.fixImage(rawImage);
 
     const image = fixedImage
-      ? `${this.apiUrl}/images/proxy?url=${encodeURIComponent(fixedImage)}`
-      : `${this.apiUrl}/images/proxy?url=${encodeURIComponent(
+      ? `${this.apiUrl}/api/images/proxy?url=${encodeURIComponent(fixedImage)}`
+      : `${this.apiUrl}/api/images/proxy?url=${encodeURIComponent(
           'https://via.placeholder.com/640x480?text=No+Image',
         )}`;
 
