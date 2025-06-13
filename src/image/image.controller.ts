@@ -1,4 +1,3 @@
-// src/image/image.controller.ts
 import {
   BadRequestException,
   Controller,
@@ -15,11 +14,14 @@ export class ImagesController {
   async proxy(@Query('url') url: string, @Res() res: Response) {
     if (!url) throw new BadRequestException('URL is required');
 
-    // 🔄 Substituir placeimg por loremflickr
     const parsedUrl = decodeURIComponent(url);
-    const fixedUrl = parsedUrl.includes('placeimg.com')
-      ? parsedUrl.replace('http://placeimg.com', 'https://loremflickr.com')
-      : parsedUrl;
+
+    // 🔧 Faz substituição de domínio
+    const fixedUrl = parsedUrl
+      .replace('http://placeimg.com', 'https://source.unsplash.com')
+      .replace('https://placeimg.com', 'https://source.unsplash.com')
+      .replace('http://loremflickr.com', 'https://source.unsplash.com')
+      .replace('https://loremflickr.com', 'https://source.unsplash.com');
 
     try {
       const response = await axios.get(fixedUrl, {
