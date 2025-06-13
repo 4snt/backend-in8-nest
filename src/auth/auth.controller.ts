@@ -1,5 +1,13 @@
 // src/auth/auth.controller.ts
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from './auth.guard'; // seu guard que valida JWT
 import { AuthService } from './auth.service';
 
 class RegisterDto {
@@ -24,5 +32,11 @@ export class AuthController {
   @Post('login')
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto.email, dto.password);
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard)
+  getProfile(@Request() req) {
+    return req.user;
   }
 }
