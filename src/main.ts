@@ -7,11 +7,10 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors();
 
-  const PORT = Number(process.env.PORT) || 3000;
+  // Não forneça fallback local (como || 3000)
+  const PORT = Number(process.env.PORT);
 
-  await app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}/api`);
-  });
+  await app.listen(PORT);
 }
 
 bootstrap();
