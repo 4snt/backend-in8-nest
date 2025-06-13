@@ -1,39 +1,34 @@
-import {
-  BadRequestException,
-  Controller,
-  Get,
-  Query,
-  Res,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import axios from 'axios';
 import { Response } from 'express';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
-@Controller('images-proxy')
-export class ImagesController {
-  @Get()
-  async proxy(@Query('url') url: string, @Res() res: Response) {
-    if (!url) throw new BadRequestException('URL is required');
+@Controller('images')
+export class ImageController {
+  @Get(':imageName')
+  async getImage(
+    @Param('imageName') imageName: string,
+    @Query('url') url: string,
+    @Res() res: Response,
+  ) {
+    const localPath = join(__dirname, '..', '..', 'uploads', imageName);
 
-    const parsedUrl = decodeURIComponent(url);
-
-    // 🔧 Faz substituição de domínio
-    const fixedUrl = parsedUrl
-      .replace('http://placeimg.com', 'https://source.unsplash.com')
-      .replace('https://placeimg.com', 'https://source.unsplash.com')
-      .replace('http://loremflickr.com', 'https://source.unsplash.com')
-      .replace('https://loremflickr.com', 'https://source.unsplash.com');
-
-    try {
-      const response = await axios.get(fixedUrl, {
-        responseType: 'arraybuffer',
-      });
-
-      const contentType = response.headers['content-type'] || 'image/jpeg';
-      res.setHeader('Content-Type', contentType);
-      res.send(response.data);
-    } catch (error) {
-      console.error('Proxy image error:', error);
-      res.status(404).send('Image not found');
+    if (existsSync(localPath)) {
+      return res.sendFile(localPath);
     }
+
+    if (url) {
+      try {
+        const response = await axios.get(url, { responseType: 'arraybuffer' });
+        res.setHeader('Content-Type', response.headers['content-type']);
+        return res.send(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar imagem da URL:', error);
+        return res.status(404).send('Image not found in URL');
+      }
+    }
+
+    return res.status(404).send('Image not found locally');
   }
 }

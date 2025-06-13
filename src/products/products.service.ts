@@ -11,7 +11,7 @@ export class ProductsService {
   constructor(private config: ConfigService) {
     this.brUrl = this.config.get<string>('BRAZILIAN_URL')!;
     this.euUrl = this.config.get<string>('EUROPEAN_URL')!;
-    this.apiUrl = this.config.get<string>('API_URL')!; // URL do próprio backend
+    this.apiUrl = this.config.get<string>('API_URL')!; // URL do backend
   }
 
   private normalize(product: any, provider: 'br' | 'eu') {
@@ -19,16 +19,22 @@ export class ProductsService {
       product.price || product.preco || product.preço || '0',
     );
 
+    // 🔥 Tratamento de imagem
     const rawImage =
       provider === 'eu'
         ? product.gallery?.[0] || product.image || ''
         : product.imagem || product.image || '';
 
+    const isExternalImage =
+      rawImage.startsWith('http://') || rawImage.startsWith('https://');
+
     const image = rawImage
-      ? `${this.config.get('API_URL')}/images-proxy?url=${encodeURIComponent(
-          rawImage,
-        )}`
-      : `${this.config.get('API_URL')}/images-proxy?url=${encodeURIComponent(
+      ? isExternalImage
+        ? `${this.apiUrl}/images/${encodeURIComponent(
+            rawImage.split('/').pop(),
+          )}?url=${encodeURIComponent(rawImage)}`
+        : `${this.apiUrl}/images/${encodeURIComponent(rawImage)}`
+      : `${this.apiUrl}/images/placeholder.png?url=${encodeURIComponent(
           'https://via.placeholder.com/640x480?text=No+Image',
         )}`;
 
