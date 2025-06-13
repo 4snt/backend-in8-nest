@@ -24,11 +24,13 @@ export class ProductsService {
         ? product.gallery?.[0] || product.image || ''
         : product.imagem || product.image || '';
 
-    const backendUrl = this.config.get('API_URL')?.replace(/\/$/, '') || '';
-
     const image = rawImage
-      ? `${backendUrl}/images-proxy?url=${encodeURIComponent(rawImage)}`
-      : '';
+      ? `${this.config.get('API_URL')}/images-proxy?url=${encodeURIComponent(
+          rawImage,
+        )}`
+      : `${this.config.get('API_URL')}/images-proxy?url=${encodeURIComponent(
+          'https://via.placeholder.com/640x480?text=No+Image',
+        )}`;
 
     return {
       id: `${provider}-${product.id}`,
