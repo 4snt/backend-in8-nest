@@ -14,20 +14,31 @@ export class ProductsService {
     this.apiUrl = this.config.get<string>('API_URL')!; // URL do backend
   }
 
+  private fixImage(url: string) {
+    if (!url) return '';
+    return url.replace(
+      'http://placeimg.com/640/480/',
+      'https://loremflickr.com/640/480/',
+    );
+  }
+
   private normalize(product: any, provider: 'br' | 'eu') {
     const price = parseFloat(
       product.price || product.preco || product.preço || '0',
     );
 
-    // 🔥 Tratamento de imagem
     const rawImage =
       provider === 'eu'
         ? product.gallery?.[0] || product.image || ''
         : product.imagem || product.image || '';
 
-    const image = rawImage
-      ? `${this.apiUrl}/images/proxy?url=${encodeURIComponent(rawImage)}`
-      : `${this.apiUrl}/images/proxy?url=${encodeURIComponent('https://via.placeholder.com/640x480?text=No+Image')}`;
+    const fixedImage = this.fixImage(rawImage);
+
+    const image = fixedImage
+      ? `${this.apiUrl}/images/proxy?url=${encodeURIComponent(fixedImage)}`
+      : `${this.apiUrl}/images/proxy?url=${encodeURIComponent(
+          'https://via.placeholder.com/640x480?text=No+Image',
+        )}`;
 
     return {
       id: `${provider}-${product.id}`,
