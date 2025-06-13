@@ -7,16 +7,11 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors();
 
-  const port = parseInt(process.env.PORT || '3000', 10);
+  const PORT = process.env.PORT || 3000;
 
-  await app.listen(port);
-
-  console.log(
-    `🚀 Server is running on port ${port} — ${
-      process.env.NODE_ENV === 'production'
-        ? 'https://backend-in8-nest-production.up.railway.app'
-        : `http://localhost:${port}`
-    }/api`,
-  );
+  await app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}/api`);
+  });
 }
+
 bootstrap();
