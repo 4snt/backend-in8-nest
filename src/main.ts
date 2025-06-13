@@ -7,10 +7,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors();
 
-  // Não forneça fallback local (como || 3000)
-  const PORT = Number(process.env.PORT);
-
-  await app.listen(PORT);
+  const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+  await app.listen(port);
 }
 
 bootstrap();
