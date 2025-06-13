@@ -25,18 +25,9 @@ export class ProductsService {
         ? product.gallery?.[0] || product.image || ''
         : product.imagem || product.image || '';
 
-    const isExternalImage =
-      rawImage.startsWith('http://') || rawImage.startsWith('https://');
-
     const image = rawImage
-      ? isExternalImage
-        ? `${this.apiUrl}/images/${encodeURIComponent(
-            rawImage.split('/').pop(),
-          )}?url=${encodeURIComponent(rawImage)}`
-        : `${this.apiUrl}/images/${encodeURIComponent(rawImage)}`
-      : `${this.apiUrl}/images/placeholder.png?url=${encodeURIComponent(
-          'https://via.placeholder.com/640x480?text=No+Image',
-        )}`;
+      ? `${this.apiUrl}/images/proxy?url=${encodeURIComponent(rawImage)}`
+      : `${this.apiUrl}/images/proxy?url=${encodeURIComponent('https://via.placeholder.com/640x480?text=No+Image')}`;
 
     return {
       id: `${provider}-${product.id}`,
