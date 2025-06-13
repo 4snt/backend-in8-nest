@@ -24,8 +24,10 @@ export class ProductsService {
         ? product.gallery?.[0] || product.image || ''
         : product.imagem || product.image || '';
 
+    const backendUrl = this.config.get('API_URL')?.replace(/\/$/, '') || '';
+
     const image = rawImage
-      ? `${this.apiUrl}/images-proxy?url=${encodeURIComponent(rawImage)}`
+      ? `${backendUrl}/images-proxy?url=${encodeURIComponent(rawImage)}`
       : '';
 
     return {
