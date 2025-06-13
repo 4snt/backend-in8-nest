@@ -8,23 +8,25 @@ export class ProductsService {
   private euUrl: string;
 
   constructor(private config: ConfigService) {
-    // obtém as URLs do .env, igual ao dotenv.config() original :contentReference[oaicite:2]{index=2}
     this.brUrl = this.config.get<string>('BRAZILIAN_URL')!;
     this.euUrl = this.config.get<string>('EUROPEAN_URL')!;
   }
 
   private normalize(product: any, provider: 'br' | 'eu') {
-    const price = isNaN(parseFloat(product.price))
-      ? 0
-      : parseFloat(product.price);
+    const price = parseFloat(
+      product.price || product.preco || product.preço || '0',
+    );
+
     const image =
-      provider === 'eu' ? product.gallery?.[0] || '' : product.image || '';
+      provider === 'eu'
+        ? product.gallery?.[0] || product.image || ''
+        : product.imagem || product.image || '';
 
     return {
       id: `${provider}-${product.id}`,
-      name: product.name,
-      description: product.description ?? '',
-      price,
+      name: product.name || product.nome || 'Sem nome',
+      description: product.description || product.descricao || '',
+      price: isNaN(price) ? 0 : price,
       image,
       provider,
       hasDiscount: product.hasDiscount ?? false,
@@ -33,11 +35,11 @@ export class ProductsService {
   }
 
   async findAll() {
-    // unifica produtos de duas APIs :contentReference[oaicite:3]{index=3}
     const [brRes, euRes] = await Promise.all([
       axios.get(this.brUrl),
       axios.get(this.euUrl),
     ]);
+
     return [
       ...brRes.data.map((p: any) => this.normalize(p, 'br')),
       ...euRes.data.map((p: any) => this.normalize(p, 'eu')),
@@ -45,9 +47,9 @@ export class ProductsService {
   }
 
   async findOne(id: string) {
-    // busca produto por ID adaptada de getProductById :contentReference[oaicite:4]{index=4}
     const [provider, rawId] = id.split('-');
     let url: string;
+
     if (provider === 'br') url = `${this.brUrl}/${rawId}`;
     else if (provider === 'eu') url = `${this.euUrl}/${rawId}`;
     else throw new Error('Invalid provider');
