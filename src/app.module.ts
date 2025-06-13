@@ -12,12 +12,12 @@ import { ProductsModule } from './products/products.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ImageModule,
     AuthModule,
     ProductsModule,
     PrismaModule,
     OrdersModule,
     CheckoutModule,
-    ImageModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
