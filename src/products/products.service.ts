@@ -17,10 +17,14 @@ export class ProductsService {
       product.price || product.preco || product.preço || '0',
     );
 
-    const image =
+    const rawImage =
       provider === 'eu'
         ? product.gallery?.[0] || product.image || ''
         : product.imagem || product.image || '';
+
+    const image = rawImage
+      ? `${this.config.get('API_URL')}/images-proxy?url=${encodeURIComponent(rawImage)}`
+      : '';
 
     return {
       id: `${provider}-${product.id}`,
