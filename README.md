@@ -6,7 +6,9 @@ Este é o backend desenvolvido com **NestJS** para o desafio técnico da **Devno
 - Registro de pedidos no banco de dados;
 - Autenticação segura com JWT;
 - Integração com PostgreSQL (via Neon) usando Prisma ORM;
-- Organização modular e escalável para futuros recursos como checkout real com Stripe.
+- Organização modular e escalável para futuros recursos como checkout real com Stripe;
+- Deploy funcional via **Railway**;
+- Versionamento de releases com `standard-version`.
 
 ---
 
@@ -19,7 +21,8 @@ Este é o backend desenvolvido com **NestJS** para o desafio técnico da **Devno
 - **JWT + bcrypt** (autenticação segura)
 - **TypeScript** (tipagem robusta)
 - **dotenv** (variáveis de ambiente)
-- **Vercel** (compatível com funções serverless)
+- **Railway** (deploy automático com GitHub)
+- **standard-version** (versionamento semântico de releases)
 
 ---
 
@@ -154,11 +157,38 @@ npm run start:dev
 
 ---
 
-## ✉️ Observações
+## 📦 Versionamento
 
-- Todas as rotas principais (exceto login e registro) são protegidas por **JWT AuthGuard**;
-- Os produtos são mockados via Axios;
-- O checkout é simulado — pronto para futura integração com gateways reais.
+Este projeto segue o padrão **SemVer** com o uso da ferramenta [`standard-version`](https://github.com/conventional-changelog/standard-version).
+
+```bash
+npm run release
+```
+
+---
+
+## ☁️ Deploy
+
+> O backend está hospedado no Railway, com CI/CD via GitHub.
+
+🌐 **URL pública** (exemplo):  
+https://backend-in8-nest-production.up.railway.app
+
+---
+
+## 🔐 Proteção de Rotas
+
+As rotas `orders` e `checkout` estão protegidas por JWT usando um `AuthGuard`. O token JWT deve ser passado via header:
+
+```
+Authorization: Bearer <token>
+```
+
+---
+
+## 🖥️ Frontend
+
+Este repositório cobre **apenas o backend**. O frontend será publicado separadamente, consumindo este backend público.
 
 ---
 
