@@ -3,11 +3,20 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.setGlobalPrefix('api');
   app.enableCors();
-  await app.listen(process.env.PORT || 3000);
+
+  const port = parseInt(process.env.PORT || '3000', 10);
+
+  await app.listen(port);
+
   console.log(
-    `🚀 Server listening on http://localhost:${process.env.PORT || 3000}`,
+    `🚀 Server is running on port ${port} — ${
+      process.env.NODE_ENV === 'production'
+        ? 'https://backend-in8-nest-production.up.railway.app'
+        : `http://localhost:${port}`
+    }/api`,
   );
 }
 bootstrap();
