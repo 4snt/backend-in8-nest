@@ -1,18 +1,25 @@
-import { Body, Controller, NotFoundException, Post } from '@nestjs/common';
+import { Controller, Headers, Post, Req, Res } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
-  @Post('create')
-  async createPayment(@Body() body: { orderId: number }) {
-    const { orderId } = body;
+  @Post('webhook')
+  async handleWebhook(
+    @Req() request,
+    @Res() response,
+    @Headers('stripe-signature') signature: string,
+  ) {
+    const result = await this.paymentService.handleStripeWebhook(
+      request,
+      signature,
+    );
 
-    if (!orderId) {
-      throw new NotFoundException('Order ID is required');
+    if (result.success) {
+      return response.status(200).send('Webhook received');
     }
 
-    return this.paymentService.createStripeCheckoutSession(orderId);
+    return response.status(400).send(`Webhook Error: ${result.message}`);
   }
 }

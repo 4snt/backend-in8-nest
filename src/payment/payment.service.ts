@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Request } from 'express';
 import Stripe from 'stripe';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -16,14 +17,10 @@ export class PaymentService {
     });
 
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new Error('Order not found');
     }
 
-    // ✅ Garante que products é um array e não string ou null
-    const products =
-      typeof order.products === 'string'
-        ? JSON.parse(order.products)
-        : (order.products ?? []);
+    const products = (order.products as any[]) ?? [];
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -34,7 +31,7 @@ export class PaymentService {
           product_data: {
             name: item.name,
           },
-          unit_amount: Math.round(item.price * 100), // Stripe usa centavos
+          unit_amount: Math.round(item.price * 100),
         },
         quantity: item.quantity,
       })),
@@ -46,5 +43,43 @@ export class PaymentService {
     });
 
     return { url: session.url };
+  }
+
+  async handleStripeWebhook(request: Request, signature: string) {
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
+    let event: Stripe.Event;
+
+    try {
+      const rawBody = (request as any).body;
+      event = stripe.webhooks.constructEvent(
+        rawBody,
+        signature,
+        endpointSecret,
+      );
+    } catch (err: any) {
+      return {
+        success: false,
+        message: `Webhook signature verification failed: ${err.message}`,
+      };
+    }
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+
+      const orderId = session.metadata?.orderId;
+
+      if (orderId) {
+        await this.prisma.order.update({
+          where: { id: Number(orderId) },
+          data: { status: 'paid' },
+        });
+      }
+
+      return { success: true };
+    }
+
+    console.log(`Unhandled event type ${event.type}`);
+    return { success: true };
   }
 }
