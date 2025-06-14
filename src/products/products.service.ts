@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { fixImage } from '../common/helpers/image.helper';
 
 @Injectable()
 export class ProductsService {
@@ -16,53 +17,33 @@ export class ProductsService {
     this.pixabayApiKey = this.config.get<string>('PIXABAY_API_KEY')!;
   }
 
-  private async fixImage(url: string): Promise<string> {
-    if (!url) return '';
-    console.log('API KEY:', this.pixabayApiKey);
-    const match = url.match(/placeimg\.com\/640\/480\/(\w+)/);
-    const category = match ? match[1] : 'random';
-
-    const pixabayUrl = `https://pixabay.com/api/?key=${this.pixabayApiKey}&q=${category}&image_type=photo&per_page=3`;
-
-    try {
-      const response = await axios.get(pixabayUrl);
-
-      const hits = response.data.hits;
-      if (hits.length > 0) {
-        return hits[0].largeImageURL || hits[0].webformatURL;
-      }
-
-      return 'https://via.placeholder.com/640x480?text=No+Image+Found';
-    } catch (error) {
-      console.error('Error fetching image from Pixabay:', error);
-      return 'https://via.placeholder.com/640x480?text=No+Image+Error';
-    }
-  }
-
   private async normalize(product: any, provider: 'br' | 'eu') {
     const price = parseFloat(
       product.price || product.preco || product.preço || '0',
     );
 
-    const rawImage =
+    const rawImages =
       provider === 'eu'
-        ? product.gallery?.[0] || product.image || ''
-        : product.imagem || product.image || '';
+        ? product.gallery || [product.image || '']
+        : [product.imagem || product.image || ''];
 
-    const fixedImage = await this.fixImage(rawImage);
-
-    const image = fixedImage
-      ? `${this.apiUrl}/api/images/proxy?url=${encodeURIComponent(fixedImage)}`
-      : `${this.apiUrl}/api/images/proxy?url=${encodeURIComponent(
-          'https://via.placeholder.com/640x480?text=No+Image',
-        )}`;
+    const fixedImages = await Promise.all(
+      rawImages.map(async (img: string) => {
+        const fixed = await fixImage(img, this.pixabayApiKey);
+        return fixed
+          ? `${this.apiUrl}/api/images/proxy?url=${encodeURIComponent(fixed)}`
+          : `${this.apiUrl}/api/images/proxy?url=${encodeURIComponent(
+              'https://via.placeholder.com/640x480?text=No+Image',
+            )}`;
+      }),
+    );
 
     return {
       id: `${provider}-${product.id}`,
       name: product.name || product.nome || 'Sem nome',
       description: product.description || product.descricao || '',
       price: isNaN(price) ? 0 : price,
-      image,
+      images: fixedImages,
       provider,
       hasDiscount: product.hasDiscount ?? false,
       discountValue: parseFloat(product.discountValue || '0'),
@@ -89,15 +70,14 @@ export class ProductsService {
   async findOne(id: string) {
     const [provider, rawId] = id.split('-');
 
-    let url: string;
-
-    if (provider === 'br') {
-      url = `${this.brUrl}/${rawId}`;
-    } else if (provider === 'eu') {
-      url = `${this.euUrl}/${rawId}`;
-    } else {
-      throw new Error('Invalid provider');
-    }
+    const url =
+      provider === 'br'
+        ? `${this.brUrl}/${rawId}`
+        : provider === 'eu'
+          ? `${this.euUrl}/${rawId}`
+          : (() => {
+              throw new Error('Invalid provider');
+            })();
 
     try {
       const res = await axios.get(url);
