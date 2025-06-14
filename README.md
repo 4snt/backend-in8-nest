@@ -28,210 +28,165 @@ Este é o backend desenvolvido com **NestJS** para o desafio técnico da **Devno
 
 ## 📂 Estrutura do Projeto
 
-\`\`\`
+```
 backend-in8-nest/
 ├── src/
-│ ├── auth/ # Autenticação (JWT, login, registro, guard)
-│ ├── products/ # Produtos unificados (fetch externo)
-│ ├── orders/ # Registro de pedidos
-│ ├── checkout/ # Mock de integração de pagamento
-│ ├── image/ # Proxy de imagens externas
-│ ├── prisma/ # PrismaService (client wrapper)
-│ └── main.ts # Bootstrap da aplicação Nest
+│   ├── auth/          # Autenticação (JWT, login, registro, guard)
+│   ├── products/      # Produtos unificados (fetch externo)
+│   ├── orders/        # Registro de pedidos
+│   ├── checkout/      # Mock de integração de pagamento
+│   ├── image/         # Proxy de imagens externas
+│   ├── prisma/        # PrismaService (client wrapper)
+│   └── main.ts        # Bootstrap da aplicação Nest
 ├── prisma/
-│ └── schema.prisma # Modelo de dados Prisma
-├── .env # Variáveis de ambiente
+│   └── schema.prisma  # Modelo de dados Prisma
+├── .env               # Variáveis de ambiente
 ├── package.json
 └── README.md
-\`\`\`
+```
 
 ---
 
 ## 🔐 Autenticação
 
-### \`POST /api/auth/register\`
+### `POST /api/auth/register`
 
 Registra um novo usuário.
 
-\`\`\`json
+```json
 {
-"name": "Murilo",
-"email": "murilo@email.com",
-"password": "123456"
+  "name": "Murilo",
+  "email": "murilo@email.com",
+  "password": "123456"
 }
-\`\`\`
+```
 
-### \`POST /api/auth/login\`
+### `POST /api/auth/login`
 
 Autentica um usuário e retorna o token JWT.
 
-\`\`\`json
+```json
 {
-"email": "murilo@email.com",
-"password": "123456"
+  "email": "murilo@email.com",
+  "password": "123456"
 }
-\`\`\`
+```
 
 ---
 
 ## 📦 Produtos
 
-### \`GET /api/products\`
+### `GET /api/products`
 
-Retorna todos os produtos unificados (br + eu).
+Retorna todos os produtos unificados (br + eu). Suporta busca e filtros.
 
-### \`GET /api/products/:id\`
+### `GET /api/products/:id`
 
 Retorna detalhes de um produto específico.
+
+### 🔗 Parâmetros de Query disponíveis:
+
+| Parâmetro     | Tipo    | Descrição                                                                                                               | Opcional |
+| ------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
+| `query`       | string  | Texto para busca nos campos `name`, `description`, `material`, `adjective`, `provider`. Pode conter múltiplas palavras. | ✅       |
+| `provider`    | string  | Filtra por fornecedor. Valores: `br` ou `eu`.                                                                           | ✅       |
+| `hasDiscount` | boolean | Filtra produtos que tenham (`true`) ou não (`false`) desconto.                                                          | ✅       |
+
+### 🔍 Exemplos práticos:
+
+- `GET /api/products?query=Granite Pizza`
+- `GET /api/products?provider=eu`
+- `GET /api/products?hasDiscount=true`
+- `GET /api/products?query=Plastic Shoes&provider=br&hasDiscount=true`
 
 ---
 
 ## 🖼️ Proxy de Imagens
 
-### \`GET /api/images/proxy\`
+### `GET /api/images/proxy`
 
-Este endpoint funciona como um **proxy de imagens externas**, evitando problemas de CORS no frontend e centralizando as requisições.
+Serve imagens externas via proxy.  
+**Query param:** `url` (obrigatório)
 
-### 🔗 Query Params:
+Exemplo:
 
-| Parâmetro | Descrição                           | Obrigatório |
-| --------- | ----------------------------------- | ----------- |
-| \`url\`   | URL da imagem externa a ser servida | ✅ Sim      |
-
-### 🔥 Exemplo de requisição:
-
-\`\`\`
-GET /api/images/proxy?url=https://loremflickr.com/640/480/business
-\`\`\`
-
-### 📸 Resposta:
-
-Retorna diretamente a imagem requisitada.
-
-### 🚫 Erros possíveis:
-
-- \`400 Bad Request\`: Quando o parâmetro \`url\` não é informado.
-- \`404 Not Found\`: Quando não foi possível buscar a imagem na URL externa.
-
-### ✔️ Exemplo de uso no frontend:
-
-\`\`\`html
-<img src="https://backend-in8-nest-production.up.railway.app/api/images/proxy?url=https://loremflickr.com/640/480/city" alt="Product Image" />
-\`\`\`
-
-### 💡 Observação:
-
-Se quiser garantir imagens diferentes mesmo usando o mesmo termo, utilize um parâmetro \`random\`:
-\`\`\`
-https://loremflickr.com/640/480/city?random=12345
-\`\`\`
+```
+/api/images/proxy?url=https://loremflickr.com/640/480/city
+```
 
 ---
 
 ## 🧾 Pedidos
 
-### \`GET /api/orders\`
+### `GET /api/orders`
 
-Lista os pedidos registrados. **(Protegido por JWT)**
+Lista pedidos (protegido com JWT).
 
-### \`POST /api/orders\`
+### `POST /api/orders`
 
 Cria um novo pedido.
 
-\`\`\`json
+```json
 {
-"userId": 1,
-"amount": 250.75,
-"currency": "BRL",
-"status": "PENDING",
-"paymentIntentId": "pi_demo_123",
-"products": [{ "id": "br-1", "quantity": 2 }],
-"address": {
-"street": "Av. Brasil, 1000",
-"city": "São Paulo"
+  "userId": 1,
+  "amount": 250.75,
+  "currency": "BRL",
+  "status": "PENDING",
+  "paymentIntentId": "pi_demo_123",
+  "products": [{ "id": "br-1", "quantity": 2 }],
+  "address": {
+    "street": "Av. Brasil, 1000",
+    "city": "São Paulo"
+  }
 }
-}
-\`\`\`
+```
 
 ---
 
 ## 💳 Checkout
 
-### \`POST /api/checkout\`
+### `POST /api/checkout`
 
-Simula a criação de uma sessão de pagamento (exemplo para futura integração com Stripe).
+Mock de checkout.
 
-\`\`\`json
+```json
 {
-"orderId": 1,
-"amount": 250.75
+  "orderId": 1,
+  "amount": 250.75
 }
-\`\`\`
+```
 
 ---
 
 ## ⚙️ Como Rodar Localmente
 
-1. **Clonar o repositório:**
-
-\`\`\`bash
-git clone https://github.com/seu-usuario/backend-in8-nest.git
+```bash
+git clone https://github.com/4snt/backend-in8-nest.git
 cd backend-in8-nest
-\`\`\`
 
-2. **Instalar dependências:**
-
-\`\`\`bash
 npm install
-\`\`\`
-
-3. **Gerar o client do Prisma e aplicar o schema:**
-
-\`\`\`bash
 npx prisma generate
 npx prisma db push
-\`\`\`
 
-4. **Rodar a aplicação:**
-
-\`\`\`bash
 npm run start:dev
-\`\`\`
-
----
-
-## 📦 Versionamento
-
-Este projeto segue o padrão **SemVer** com o uso da ferramenta [\`standard-version\`](https://github.com/conventional-changelog/standard-version).
-
-\`\`\`bash
-npm run release
-\`\`\`
+```
 
 ---
 
 ## ☁️ Deploy em Produção
 
-Este backend está **hospedado em produção** via [Railway](https://railway.app), com CI/CD automatizado conectado ao GitHub.
-
-🔗 **URL pública:**  
-👉 https://backend-in8-nest-production.up.railway.app
+Deploy feito na Railway.  
+🔗 https://backend-in8-nest-production.up.railway.app
 
 ---
 
 ## 🔐 Proteção de Rotas
 
-As rotas \`orders\` e \`checkout\` estão protegidas por JWT usando um \`AuthGuard\`. O token JWT deve ser passado via header:
+JWT via header:
 
-\`\`\`
+```
 Authorization: Bearer <token>
-\`\`\`
-
----
-
-## 🖥️ Frontend
-
-Este repositório cobre **apenas o backend**. O frontend será publicado separadamente, consumindo este backend público em produção.
+```
 
 ---
 

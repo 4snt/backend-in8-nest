@@ -2,15 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { fixImage } from '../common/helpers/image.helper';
+import {
+  filterProducts,
+  mapProducts,
+  searchProducts,
+} from '../common/helpers/product.helper';
 
 @Injectable()
 export class ProductsService {
-  private brUrl: string;
-  private euUrl: string;
-  private apiUrl: string;
-  private pixabayApiKey: string;
+  private readonly brUrl: string;
+  private readonly euUrl: string;
+  private readonly apiUrl: string;
+  private readonly pixabayApiKey: string;
 
-  constructor(private config: ConfigService) {
+  constructor(private readonly config: ConfigService) {
     this.brUrl = this.config.get<string>('BRAZILIAN_URL')!;
     this.euUrl = this.config.get<string>('EUROPEAN_URL')!;
     this.apiUrl = this.config.get<string>('API_URL')!;
@@ -50,39 +55,67 @@ export class ProductsService {
     };
   }
 
-  async findAll() {
-    const [brRes, euRes] = await Promise.all([
-      axios.get(this.brUrl),
-      axios.get(this.euUrl),
-    ]);
+  async findAll(
+    query?: string,
+    filters: { [key: string]: string | number | boolean } = {},
+  ) {
+    const providerFilter = String(filters.provider || '').toLowerCase();
 
-    const brProducts = await Promise.all(
-      brRes.data.map((p: any) => this.normalize(p, 'br')),
-    );
+    const promises: Promise<any[]>[] = [];
 
-    const euProducts = await Promise.all(
-      euRes.data.map((p: any) => this.normalize(p, 'eu')),
-    );
+    if (!providerFilter || providerFilter === 'br') {
+      promises.push(
+        axios
+          .get(this.brUrl)
+          .then((res) =>
+            Promise.all(res.data.map((p: any) => this.normalize(p, 'br'))),
+          ),
+      );
+    }
 
-    return [...brProducts, ...euProducts];
+    if (!providerFilter || providerFilter === 'eu') {
+      promises.push(
+        axios
+          .get(this.euUrl)
+          .then((res) =>
+            Promise.all(res.data.map((p: any) => this.normalize(p, 'eu'))),
+          ),
+      );
+    }
+
+    const results = await Promise.all(promises);
+    let products = results.flat();
+
+    // 🔥 Remove provider do filtro
+    const { provider, ...restFilters } = filters;
+
+    // 🔍 Busca
+    if (query) {
+      products = searchProducts(products, query);
+    }
+
+    // 🧠 Filtros extras
+    if (Object.keys(restFilters).length > 0) {
+      products = filterProducts(products, restFilters);
+    }
+
+    return mapProducts(products);
   }
 
   async findOne(id: string) {
     const [provider, rawId] = id.split('-');
 
+    if (!['br', 'eu'].includes(provider)) {
+      throw new Error('Invalid provider');
+    }
+
     const url =
-      provider === 'br'
-        ? `${this.brUrl}/${rawId}`
-        : provider === 'eu'
-          ? `${this.euUrl}/${rawId}`
-          : (() => {
-              throw new Error('Invalid provider');
-            })();
+      provider === 'br' ? `${this.brUrl}/${rawId}` : `${this.euUrl}/${rawId}`;
 
     try {
       const res = await axios.get(url);
       if (!res.data?.id) return null;
-      return await this.normalize(res.data, provider);
+      return await this.normalize(res.data, provider as 'br' | 'eu');
     } catch (error) {
       console.error('Erro ao buscar produto:', error);
       return null;
