@@ -1,5 +1,7 @@
 // src/orders/orders.service.ts
+
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -7,7 +9,9 @@ export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
   findAll() {
-    return this.prisma.order.findMany();
+    return this.prisma.order.findMany({
+      orderBy: { createDate: 'desc' },
+    });
   }
 
   findOne(id: string) {
@@ -22,9 +26,7 @@ export class OrdersService {
     userId: number;
     amount: number;
     currency: string;
-    status: string;
-    paymentIntentId: string;
-    products: any;
+    products: any[];
     address?: any;
   }) {
     return this.prisma.order.create({
@@ -32,8 +34,8 @@ export class OrdersService {
         userId: dto.userId,
         amount: dto.amount,
         currency: dto.currency,
-        status: dto.status,
-        paymentIntentId: dto.paymentIntentId,
+        status: 'pending', // 🔥 Sempre começa como pending
+        paymentIntentId: randomUUID(), // 🔥 Gera automaticamente o ID do pagamento
         products: dto.products,
         address: dto.address,
       },

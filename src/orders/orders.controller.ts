@@ -25,7 +25,6 @@ export class OrdersController {
       userId: number;
       amount: number;
       currency: string;
-      status: string;
       paymentIntentId: string;
       products: any;
       address?: any;
