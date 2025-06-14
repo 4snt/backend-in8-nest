@@ -47,6 +47,7 @@ export class ProductsService {
       id: `${provider}-${product.id}`,
       name: product.name || product.nome || 'Sem nome',
       description: product.description || product.descricao || '',
+      category: product.category || product.categoria || '',
       price: isNaN(price) ? 0 : price,
       images: fixedImages,
       provider,
@@ -57,7 +58,13 @@ export class ProductsService {
 
   async findAll(
     query?: string,
-    filters: { [key: string]: string | number | boolean } = {},
+    filters: {
+      provider?: string;
+      category?: string;
+      hasDiscount?: boolean;
+      minPrice?: number;
+      maxPrice?: number;
+    } = {},
   ) {
     const providerFilter = String(filters.provider || '').toLowerCase();
 
@@ -86,18 +93,16 @@ export class ProductsService {
     const results = await Promise.all(promises);
     let products = results.flat();
 
-    // 🔥 Remove provider do filtro
-    const { provider, ...restFilters } = filters;
-
-    // 🔍 Busca
     if (query) {
       products = searchProducts(products, query);
     }
 
-    // 🧠 Filtros extras
-    if (Object.keys(restFilters).length > 0) {
-      products = filterProducts(products, restFilters);
-    }
+    products = filterProducts(products, {
+      category: filters.category,
+      hasDiscount: filters.hasDiscount,
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
+    });
 
     return mapProducts(products);
   }

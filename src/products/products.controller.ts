@@ -1,5 +1,4 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ProductFiltersDto } from './dto/product-filters.dto';
 import { ProductsService } from './products.service';
 
 @Controller('products')
@@ -7,9 +6,21 @@ export class ProductsController {
   constructor(private readonly svc: ProductsService) {}
 
   @Get()
-  findAll(@Query() filters: ProductFiltersDto) {
-    const { query, ...restFilters } = filters;
-    return this.svc.findAll(query, restFilters);
+  findAll(
+    @Query('query') query?: string,
+    @Query('provider') provider?: string,
+    @Query('category') category?: string,
+    @Query('hasDiscount') hasDiscount?: string,
+    @Query('minPrice') minPrice?: string,
+    @Query('maxPrice') maxPrice?: string,
+  ) {
+    return this.svc.findAll(query, {
+      provider,
+      category,
+      hasDiscount: hasDiscount === 'true',
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+    });
   }
 
   @Get(':id')

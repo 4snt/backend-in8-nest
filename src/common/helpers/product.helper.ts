@@ -1,63 +1,48 @@
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  images: string[];
-  provider: string;
-  hasDiscount: boolean;
-  discountValue: number;
-  [key: string]: any; // Permite campos adicionais opcionais
-}
-
-// 🔥 🔍 Filtro de produtos com suporte a boolean, string e number
-export const filterProducts = (
-  products: Product[],
-  filters: { [key: string]: string | number | boolean },
-): Product[] => {
-  return products.filter((product) =>
-    Object.entries(filters).every(([key, value]) => {
-      const productValue = product[key];
-
-      // 🔥 Tratamento específico para boolean
-      if (typeof productValue === 'boolean') {
-        return String(productValue) === String(value);
-      }
-
-      // 🔥 Para outros tipos (string, number)
-      return (
-        String(productValue ?? '').toLowerCase() === String(value).toLowerCase()
-      );
-    }),
+export const searchProducts = (products: any[], query: string) => {
+  const lowerQuery = query.toLowerCase();
+  return products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(lowerQuery) ||
+      product.description.toLowerCase().includes(lowerQuery) ||
+      product.category?.toLowerCase().includes(lowerQuery) ||
+      product.provider?.toLowerCase().includes(lowerQuery),
   );
 };
 
-// 🔥 🔍 Busca inteligente, busca parcial
-export const searchProducts = (products: any[], query: string) => {
-  const words = query.trim().toLowerCase().split(/\s+/); // Divide por espaços
-
+export const filterProducts = (
+  products: any[],
+  filters: {
+    category?: string;
+    hasDiscount?: boolean;
+    minPrice?: number;
+    maxPrice?: number;
+  },
+) => {
   return products.filter((product) => {
-    const fieldsToSearch = [
-      product.name,
-      product.description,
-      product.provider,
-      product.category,
-      product.details?.material,
-      product.details?.adjective,
-    ];
+    const matchCategory = filters.category
+      ? product.category?.toLowerCase() === filters.category.toLowerCase()
+      : true;
 
-    const searchableText = fieldsToSearch
-      .filter((field) => typeof field === 'string')
-      .map((field) => field.toLowerCase())
-      .join(' ');
+    const matchDiscount =
+      filters.hasDiscount !== undefined
+        ? Boolean(product.hasDiscount) === Boolean(filters.hasDiscount)
+        : true;
 
-    // ✅ Verifica se todas as palavras estão presentes
-    return words.every((word) => searchableText.includes(word));
+    const matchMinPrice =
+      filters.minPrice !== undefined
+        ? product.price >= Number(filters.minPrice)
+        : true;
+
+    const matchMaxPrice =
+      filters.maxPrice !== undefined
+        ? product.price <= Number(filters.maxPrice)
+        : true;
+
+    return matchCategory && matchDiscount && matchMinPrice && matchMaxPrice;
   });
 };
 
-// 🔥 🧠 Mapeamento padrão dos produtos (retorna formato limpo)
-export const mapProducts = (products: Product[]): Product[] => {
+export const mapProducts = (products: any[]) => {
   return products.map((product) => ({
     id: product.id,
     name: product.name,
@@ -65,6 +50,7 @@ export const mapProducts = (products: Product[]): Product[] => {
     price: product.price,
     images: product.images,
     provider: product.provider,
+    category: product.category,
     hasDiscount: product.hasDiscount,
     discountValue: product.discountValue,
   }));
