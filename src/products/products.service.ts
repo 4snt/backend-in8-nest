@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import {
+  normalizeProductId,
+  parseProductId,
+} from '../common/helpers/id.normalizer';
 import { fixImage } from '../common/helpers/image.helper';
 import {
   filterProducts,
@@ -23,6 +27,8 @@ export class ProductsService {
   }
 
   private async normalize(product: any, provider: 'br' | 'eu') {
+    const normalizedId = normalizeProductId(provider, product.id);
+
     const price = parseFloat(
       product.price || product.preco || product.preço || '0',
     );
@@ -44,7 +50,7 @@ export class ProductsService {
     );
 
     return {
-      id: `${provider}-${product.id}`,
+      id: normalizedId,
       name: product.name || product.nome || 'Sem nome',
       description: product.description || product.descricao || '',
       category: product.category || product.categoria || '',
@@ -108,11 +114,7 @@ export class ProductsService {
   }
 
   async findOne(id: string) {
-    const [provider, rawId] = id.split('-');
-
-    if (!['br', 'eu'].includes(provider)) {
-      throw new Error('Invalid provider');
-    }
+    const { provider, rawId } = parseProductId(id);
 
     const url =
       provider === 'br' ? `${this.brUrl}/${rawId}` : `${this.euUrl}/${rawId}`;
@@ -120,7 +122,7 @@ export class ProductsService {
     try {
       const res = await axios.get(url);
       if (!res.data?.id) return null;
-      return await this.normalize(res.data, provider as 'br' | 'eu');
+      return await this.normalize(res.data, provider);
     } catch (error) {
       console.error('Erro ao buscar produto:', error);
       return null;

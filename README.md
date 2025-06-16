@@ -72,6 +72,71 @@ Autentica um usuário e retorna o token JWT.
 }
 ```
 
+# 🗂️ ProductService – ID Normalizer
+
+## 🏷️ O que é?
+
+O ID Normalizer é uma convenção implementada no `ProductService` para garantir que todos os produtos tenham um identificador único e padronizado, independentemente do fornecedor (BR ou EU).
+
+## 🎯 Formato do ID
+
+O ID segue o padrão:
+
+```
+<PROVIDER>-<ID>
+```
+
+- `PROVIDER`: indica a origem do produto, podendo ser:
+  - `BR` → Produtos do fornecedor brasileiro.
+  - `EU` → Produtos do fornecedor europeu.
+- `ID`: é o identificador original do produto, vindo da API de cada fornecedor.
+
+## 🧠 Exemplos práticos
+
+| Fornecedor | ID Original | ID Normalizado |
+| ---------- | ----------- | -------------- |
+| Brasil     | 1           | BR-1           |
+| Europa     | 42          | EU-42          |
+| Brasil     | 99          | BR-99          |
+
+## 🔧 Uso interno
+
+- ✅ Todos os métodos do `ProductService` recebem e retornam produtos com o ID no formato normalizado (`BR-1`, `EU-42`, etc.).
+- ✅ Métodos como `findAll()` e `findOne()` utilizam esse padrão tanto na resposta quanto no parâmetro de entrada.
+- ✅ O método `parseProductId()` é utilizado para quebrar o ID e determinar:
+  - De qual fornecedor (`provider`) vem.
+  - Qual é o ID original (`rawId`) a ser consultado na API externa.
+
+## 🔍 Funcionamento
+
+### 🔗 Exemplo de requisição:
+
+`GET /api/products/BR-5` → retorna o produto `id=5` do fornecedor do Brasil.  
+`GET /api/products/EU-20` → retorna o produto `id=20` do fornecedor da Europa.
+
+## Por que usar?
+
+- ✅ Evita conflitos de IDs entre fornecedores diferentes.
+- ✅ Facilita integrações, filtros, buscas e navegação.
+- ✅ Deixa claro na API de onde vem cada produto.
+- ✅ Melhora a manutenção e a escalabilidade do sistema.
+
+## 📜 Exemplo de resposta no GET `/api/products`
+
+```json
+{
+  "id": "BR-5",
+  "name": "Awesome Steel Pizza",
+  "description": "Boston's most advanced compression wear technology increases muscle oxygenation...",
+  "category": "Small",
+  "price": 32.0,
+  "images": ["https://seu-backend.com/api/images/awesome-steel-pizza.png"],
+  "provider": "br",
+  "hasDiscount": false,
+  "discountValue": 0
+}
+```
+
 ---
 
 ## 📦 Produtos
