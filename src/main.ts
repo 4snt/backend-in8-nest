@@ -5,13 +5,13 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  const allowedOrigins = process.env.APP_URL?.split(',') || [];
   app.setGlobalPrefix('api');
 
   app.use(cookieParser());
 
   app.enableCors({
-    origin: process.env.APP_URL, // 🔥 vindo do .env
+    origin: allowedOrigins, // 🔥 vindo do .env
     credentials: true,
   });
 
