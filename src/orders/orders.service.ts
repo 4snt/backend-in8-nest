@@ -1,5 +1,3 @@
-// src/orders/orders.service.ts
-
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -8,8 +6,9 @@ import { PrismaService } from '../prisma/prisma.service';
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll() {
+  findAllByUser(userId: number) {
     return this.prisma.order.findMany({
+      where: { userId },
       orderBy: { createDate: 'desc' },
     });
   }
@@ -29,16 +28,39 @@ export class OrdersService {
     products: any[];
     address?: any;
   }) {
+    if (!dto.userId) {
+      throw new BadRequestException('userId is required to create an order');
+    }
+
     return this.prisma.order.create({
       data: {
-        userId: dto.userId,
+        user: { connect: { id: dto.userId } },
         amount: dto.amount,
         currency: dto.currency,
-        status: 'pending', // 🔥 Sempre começa como pending
-        paymentIntentId: randomUUID(), // 🔥 Gera automaticamente o ID do pagamento
+        status: 'pending',
+        paymentIntentId: randomUUID(),
         products: dto.products,
         address: dto.address,
       },
+    });
+  }
+
+  async confirmOrder(id: string): Promise<void> {
+    const orderId = parseInt(id, 10);
+    if (isNaN(orderId)) {
+      throw new BadRequestException('Invalid order ID');
+    }
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+    if (!order) {
+      throw new BadRequestException(`Order with ID ${orderId} not found`);
+    }
+
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'confirmed' },
     });
   }
 }
