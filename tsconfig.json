@@ -17,6 +17,8 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["node", "express"]
+    "types": ["node", "express"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   }
 }
