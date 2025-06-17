@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.5](https://github.com/4snt/backend-in8-nest/compare/v0.2.4...v0.2.5) (2025-06-17)
+
+
+### Bug Fixes
+
+* **tsconfig:** correção ([7c9abfb](https://github.com/4snt/backend-in8-nest/commit/7c9abfb3c75ce8154b4b802e2a349bb2f5223593))
+
 ### [0.2.4](https://github.com/4snt/backend-in8-nest/compare/v0.2.3...v0.2.4) (2025-06-17)
 
 ### [0.2.3](https://github.com/4snt/backend-in8-nest/compare/v0.2.2...v0.2.3) (2025-06-17)
