@@ -7,17 +7,18 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from './auth.guard'; // seu guard que valida JWT
+import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 
-class RegisterDto {
-  name: string;
-  email: string;
-  password: string;
+export class RegisterDto {
+  name!: string;
+  email!: string;
+  password!: string;
 }
-class LoginDto {
-  email: string;
-  password: string;
+
+export class LoginDto {
+  email!: string;
+  password!: string;
 }
 
 @Controller('auth')
@@ -26,17 +27,19 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto.name, dto.email, dto.password);
+    const { name, email, password } = dto;
+    return this.authService.register(name, email, password);
   }
 
   @Post('login')
   async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password);
+    const { email, password } = dto;
+    return this.authService.login(email, password);
   }
 
   @Get('me')
   @UseGuards(AuthGuard)
-  getProfile(@Request() req) {
+  getProfile(@Request() req: any) {
     return req.user;
   }
 }
