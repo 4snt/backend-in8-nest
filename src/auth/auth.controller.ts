@@ -1,4 +1,3 @@
-// src/auth/auth.controller.ts
 import {
   Body,
   Controller,
@@ -9,17 +8,8 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
-
-export class RegisterDto {
-  name!: string;
-  email!: string;
-  password!: string;
-}
-
-export class LoginDto {
-  email!: string;
-  password!: string;
-}
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,14 +17,12 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
-    const { name, email, password } = dto;
-    return this.authService.register(name, email, password);
+    return this.authService.register(dto);
   }
 
   @Post('login')
   async login(@Body() dto: LoginDto) {
-    const { email, password } = dto;
-    return this.authService.login(email, password);
+    return this.authService.login(dto);
   }
 
   @Get('me')

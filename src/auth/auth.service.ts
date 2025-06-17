@@ -6,6 +6,8 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -14,8 +16,9 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  async register(name: string, email: string, password: string) {
-    // lógica de registro adaptada de UserService.ts :contentReference[oaicite:0]{index=0}
+  async register(dto: RegisterDto) {
+    const { name, email, password } = dto;
+
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) throw new BadRequestException('E-mail já cadastrado.');
 
@@ -24,19 +27,18 @@ export class AuthService {
       data: { name, email, hashedPassword },
     });
 
-    // remover hashedPassword antes de retornar
-
     const { hashedPassword: _, ...userData } = user;
     return userData;
   }
 
-  async login(email: string, password: string) {
+  async login(dto: LoginDto) {
+    const { email, password } = dto;
+
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user || !user.hashedPassword) {
       throw new UnauthorizedException('Credenciais inválidas.');
     }
 
-    // Agora hashedPassword é definitivamente string
     const isMatch = await bcrypt.compare(password, user.hashedPassword);
     if (!isMatch) {
       throw new UnauthorizedException('Credenciais inválidas.');
