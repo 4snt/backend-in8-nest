@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.1](https://github.com/4snt/backend-in8-nest/compare/v0.2.0...v0.2.1) (2025-06-17)
+
+
+### Features
+
+* **deploy:** automatização por github actions do raiway ([77827dd](https://github.com/4snt/backend-in8-nest/commit/77827dddef206ee87135eb634049da27d8e03b7a))
+
 ## [0.2.0](https://github.com/4snt/backend-in8-nest/compare/v0.1.1...v0.2.0) (2025-06-17)
 
 
