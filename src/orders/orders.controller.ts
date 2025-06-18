@@ -56,8 +56,14 @@ export class OrdersController {
     });
   }
   @Post(':id/payment')
-  async confirmPayment(@Param('id') id: string): Promise<boolean> {
-    await this.svc.confirmOrder(id);
-    return true;
+  async confirmPayment(@Param('id') id: string) {
+    const idNumber = parseInt(id, 10);
+
+    if (isNaN(idNumber)) {
+      throw new BadRequestException('ID do pedido inválido');
+    }
+
+    await this.svc.confirmOrder(idNumber);
+    return { success: true, message: 'Pedido confirmado com sucesso' };
   }
 }

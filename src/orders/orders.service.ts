@@ -1,7 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-
 @Injectable()
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -45,22 +48,18 @@ export class OrdersService {
     });
   }
 
-  async confirmOrder(id: string): Promise<void> {
-    const orderId = parseInt(id, 10);
-    if (isNaN(orderId)) {
-      throw new BadRequestException('Invalid order ID');
-    }
-
+  async confirmOrder(id: number): Promise<void> {
     const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
+      where: { id },
     });
+
     if (!order) {
-      throw new BadRequestException(`Order with ID ${orderId} not found`);
+      throw new NotFoundException(`Pedido com ID ${id} não encontrado`);
     }
 
     await this.prisma.order.update({
-      where: { id: orderId },
-      data: { status: 'confirmed' },
+      where: { id },
+      data: { status: 'confirmada' },
     });
   }
 }
