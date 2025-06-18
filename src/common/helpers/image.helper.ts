@@ -1,34 +1,47 @@
 import axios from 'axios';
 
+const imageCache = new Map<string, string>();
+
 export const fixImage = async (
   url: string,
   apiKey: string,
+  fallbackCategory = 'product',
 ): Promise<string> => {
-  if (!url) return '';
+  if (!url) {
+    return `${process.env.API_URL}/placeholder.webp`;
+  }
 
+  if (imageCache.has(url)) {
+    return imageCache.get(url)!;
+  }
+
+  // 🔍 Extrai categoria da URL, se possível
   const match = url.match(/placeimg\.com\/640\/480\/(\w+)/);
-  const category = match ? match[1] : 'random';
+  const category = match ? match[1] : fallbackCategory;
 
-  const pixabayUrl = `https://pixabay.com/api/?key=${apiKey}&q=${category}&image_type=photo&per_page=3`;
+  const pixabayUrl = `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(
+    category,
+  )}&image_type=photo&per_page=3`;
 
   try {
     const response = await axios.get(pixabayUrl);
-
     const hits = response.data.hits;
-    if (hits.length > 0) {
-      return hits[0].largeImageURL || hits[0].webformatURL;
-    }
 
-    return 'https://via.placeholder.com/640x480?text=No+Image+Found';
+    const finalImage =
+      hits.length > 0
+        ? hits[0].largeImageURL || hits[0].webformatURL
+        : `${process.env.API_URL}/placeholder.webp`;
+
+    // 🔥 Salva no cache
+    imageCache.set(url, finalImage);
+
+    return finalImage;
   } catch (error) {
     console.error('Error fetching image from Pixabay:', error);
-    return 'https://via.placeholder.com/640x480?text=No+Image+Error';
+    return `${process.env.API_URL}/placeholder.webp`;
   }
 };
 
-/**
- * 🔥 Helper para processar um array de imagens
- */
 export const fixImagesArray = async (
   rawImages: string[],
   apiKey: string,
@@ -37,11 +50,7 @@ export const fixImagesArray = async (
   return Promise.all(
     rawImages.map(async (img) => {
       const fixed = await fixImage(img, apiKey);
-      return fixed
-        ? `${apiUrl}/api/images/proxy?url=${encodeURIComponent(fixed)}`
-        : `${apiUrl}/api/images/proxy?url=${encodeURIComponent(
-            'https://via.placeholder.com/640x480?text=No+Image',
-          )}`;
+      return `${apiUrl}/api/images/proxy?url=${encodeURIComponent(fixed)}`;
     }),
   );
 };

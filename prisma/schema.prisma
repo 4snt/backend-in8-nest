@@ -52,7 +52,7 @@ model Order {
   userId           Int
   amount           Float
   currency         String
-  status           String
+  status           String   @default("pending")
   deliveryStatus   String?
   createDate       DateTime @default(now())
   paymentIntentId  String   @unique
